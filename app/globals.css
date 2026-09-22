@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@400;500;600&display=swap');
+
+/* ---- Design tokens ----
+   Palette: warm blush + antique gold + deep rose, on a soft ivory ground.
+   Two type families: Cormorant Garamond (display/serif) and Jost (body/UI). */
+:root{
+  --ink:#3b2a27;
+  --paper:#fcf5f3;
+  --white:#fffcfb;
+  --muted:#8c7a80;
+  --line:#ecd9e2;
+  --blush:#f4cbdc;
+  --blush-deep:#e2a0c1;
+  --rose:#b3488c;
+  --rose-deep:#7a3d72;
+  --gold:#9c5aa0;
+  --dusk:#2c1e2a;
+  --grad: linear-gradient(120deg,#f4cbdc 0%,#c0488a 55%,#6f4b8e 100%);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Jost',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+img{max-width:100%;display:block}
+h1,h2,h3{margin:0}
+p{margin:0}
+
+.shell{width:min(1180px,calc(100% - 48px));margin:0 auto}
+.serif{font-family:'Cormorant Garamond',serif;font-weight:500;letter-spacing:-.01em}
+.label{font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.02em;color:var(--rose)}
+
+.btn{border:1px solid transparent;border-radius:999px;padding:14px 26px;display:inline-flex;justify-content:center;align-items:center;gap:8px;font-weight:500;font-size:14.5px;cursor:pointer;transition:transform .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-dark{background:var(--ink);color:var(--white)}
+.btn-dark:hover{background:var(--rose-deep)}
+.btn-soft{background:var(--blush);color:var(--rose-deep)}
+.btn-soft:hover{background:var(--blush-deep);color:var(--white)}
+.btn-line{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn-line:hover{border-color:var(--rose);color:var(--rose-deep)}
+.btn-ghost-light{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff}
+.btn-ghost-light:hover{background:rgba(255,255,255,.24)}
+
+.btn-grad{background:var(--grad);color:#fff}
+.btn-grad:hover{filter:brightness(1.06)}
+:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+
+.card{background:var(--white);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.input{width:100%;border:1px solid var(--line);background:var(--white);border-radius:13px;padding:13px 15px;outline:none;transition:border-color .15s ease}
+.input:focus{border-color:var(--rose)}
+
+/* Signature motif: a soft arch, standing in for photography wherever no
+   product/editorial image exists yet. Reused across hero, atelier panel,
+   product frames and footer so it reads as one deliberate identity. */
+.arch{border-radius:50% 50% 18px 18px / 32% 32% 18px 18px}
+.arch-frame{position:relative;overflow:hidden;background:linear-gradient(160deg,var(--blush) 0%,var(--paper) 62%,var(--white) 100%)}
+.arch-frame::before{content:'';position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.5),transparent 60%)}
+.arch-line{stroke:var(--rose);stroke-width:1.2;fill:none;opacity:.5}
+.monogram{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500}
