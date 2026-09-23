@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => { account.get().then(() => setSession(true)).catch(() => {}).finally(() => setCheckingSession(false)); }, []);
   useEffect(() => { if (session) listAllProducts().then(setProducts).catch(e => setError(e.message)); }, [session]);
@@ -47,13 +48,20 @@ export default function AdminDashboard() {
     finally { setLoading(false); }
   };
   const remove = async (p: Product) => { if (!p.$id || !confirm(`Delete ${p.name}?`)) return; await deleteProduct(p.$id); setProducts(v => v.filter(x => x.$id !== p.$id)); };
-  const chooseImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; if (f && editing) {
-      setLoading(true);
-      try { setEditing({ ...editing, image: await uploadImage(f) }); }
-      catch (err) { setError(err instanceof Error ? err.message : 'Image upload failed.'); }
-      finally { setLoading(false); }
-    }
+  const chooseImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !editing) return;
+    setError(''); setUploading(true); setLoading(true);
+    try {
+      const urls = await Promise.all(files.map(uploadImage));
+      setEditing({ ...editing, image: urls[0] || editing.image, gallery: [...(editing.gallery || []).filter(Boolean), ...urls.slice(1)] });
+    } catch (err) { setError(err instanceof Error ? err.message : 'Image upload failed. Check the Appwrite storage bucket permissions.'); }
+    finally { setUploading(false); setLoading(false); e.target.value = ''; }
+  };
+  const removeImage = (url: string) => {
+    if (!editing) return;
+    const all = [editing.image, ...(editing.gallery || [])].filter(Boolean).filter(x => x !== url);
+    setEditing({ ...editing, image: all[0] || '', gallery: all.slice(1) });
   };
 
   if (checkingSession) return <main className="grid min-h-screen place-items-center" style={{ background: 'var(--dusk)' }} />;
@@ -188,9 +196,17 @@ export default function AdminDashboard() {
                 <label className="text-[13px] font-medium">Sizes<input className="input mt-2" value={editing.sizes.join(', ')} onChange={e => setEditing({ ...editing, sizes: e.target.value.split(',').map(x => x.trim()).filter(Boolean) })} /></label>
                 <label className="text-[13px] font-medium">Colours<input className="input mt-2" value={editing.colours.join(', ')} onChange={e => setEditing({ ...editing, colours: e.target.value.split(',').map(x => x.trim()).filter(Boolean) })} /></label>
               </div>
-              <label className="text-[13px] font-medium">Cover image<input className="input mt-2" type="file" accept="image/*" onChange={chooseImage} /></label>
-              <div className="arch relative aspect-[3/1] overflow-hidden bg-[var(--blush)]/25">
-                {editing.image ? <Image src={editing.image} alt="Cover preview" fill className="object-cover" /> : <div className="grid h-full place-items-center text-sm text-[var(--muted)]">No photo yet</div>}
+              <label className="text-[13px] font-medium">Product images
+                <input className="input mt-2" type="file" accept="image/*" multiple onChange={chooseImages} disabled={uploading} />
+                <span className="mt-2 block text-xs font-normal text-[var(--muted)]">Select several images at once. The first becomes the thumbnail; the rest appear in the product gallery.</span>
+              </label>
+              {uploading && <p className="rounded-xl bg-[var(--blush)]/40 p-3 text-sm text-[var(--rose-deep)]">Uploading images… please wait, then click Save piece.</p>}
+              {error && <p className="rounded-xl bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</p>}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[editing.image, ...(editing.gallery || [])].filter(Boolean).map((url, index) => <div className="relative aspect-square overflow-hidden rounded-xl bg-[var(--blush)]/25" key={`${url}-${index}`}><Image src={url} alt={`Product image ${index + 1}`} fill className="object-cover" /><button type="button" onClick={() => removeImage(url)} className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-red-700">Remove</button>{index === 0 && <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-medium">Thumbnail</span>}</div>)}
+                {!editing.image && <div className="col-span-2 grid aspect-[3/1] place-items-center rounded-xl bg-[var(--blush)]/25 text-sm text-[var(--muted)] sm:col-span-4">No photo yet</div>}
+              </div>
+              <div className="hidden">
                 <div className="absolute bottom-2 left-2 flex items-center gap-2 rounded-full bg-[var(--white)]/90 px-3 py-1 text-xs font-medium"><ImagePlus size={14} /> Cover preview</div>
               </div>
               <button className="btn btn-dark w-full" disabled={loading}>{loading ? 'Saving…' : 'Save piece'}</button>
